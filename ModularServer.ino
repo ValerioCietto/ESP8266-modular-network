@@ -135,7 +135,7 @@ void loop() {
     }else if (req.indexOf("/image") != -1){
       client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
 
-      client.print("<>");
+      client.print(" <img src=\"https://siluxmedia.files.wordpress.com/2014/04/img_20140409_165718.jpg\" alt=\"arduino\" height=\"612\" width=\"816\"> ");
       
       client.print("</html>");   
   }
