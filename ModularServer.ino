@@ -2,13 +2,16 @@
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include "Page_Configuration.h"
 
 WiFiServer server(80);
+// multicast DNS responder
+MDNSResponder mdns;
 
 void setup() {
   Serial.begin(115200);
-
+  
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -86,6 +89,14 @@ void setup() {
     }
   }
 
+  if (!mdns.begin("robot", WiFi.localIP())) {
+    Serial.println("Error setting up MDNS responder!");
+    while(1) { 
+      delay(1000);
+    }
+  }
+  Serial.println("mDNS responder started");
+
 }
 
 void loop() {
@@ -132,13 +143,36 @@ void loop() {
     else if (req.indexOf("/modulename") != -1){
       client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nmodule{\r\ntype:relay\r\n}\n</html>\n"); 
       
+    }
+    else if (req.indexOf("/index") != -1){
+      //INDEX PAGE
+      client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
+
+      client.println(" <a href=\"/modulename\">nome e scopo del modulo</a><br>  ");
+      client.println(" <a href=\"/gpio/1\">spegni pin 1</a><br>  ");
+      client.println(" <a href=\"/gpio/0\">accendi pin 1</a><br>  ");
+      client.println(" <a href=\"/image\">mostra un immagine</a><br>  ");
+     
+      
+      client.print("</html>");   
     }else if (req.indexOf("/image") != -1){
       client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
 
       client.print(" <img src=\"https://siluxmedia.files.wordpress.com/2014/04/img_20140409_165718.jpg\" alt=\"arduino\" height=\"612\" width=\"816\"> ");
       
       client.print("</html>");   
-  }
+    } 
+    else if (req.indexOf("/button") != -1){
+      client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
+
+      client.println(" <form formaction=\"button\" formmethod=\"get\">");
+      client.println("nome rete: <input type= \"text\" name=\"fname\"><br>");
+      client.println("password: <input type=\"password\" name=\"lname\"><br>");
+      client.println("<input type=\"submit\" value=\"Submit\">");
+      client.println("</form>");
+      
+      client.print("</html>");   
+    }
     else if (req.indexOf("/slider-input") != -1){
       client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
 
@@ -161,7 +195,19 @@ void loop() {
       client.println("</form>");
       client.println("<script type='text/javascript'></script>\r\n");
       client.print("</html>");   
-  }else {
+    }else {
+      //INDEX PAGE
+      client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>");
+
+      client.println(" <a href=\"/modulename\">nome e scopo del modulo</a><br>  ");
+      client.println(" <a href=\"/gpio/1\">spegni pin 1</a><br>  ");
+      client.println(" <a href=\"/gpio/0\">accendi pin 1</a><br>  ");
+      client.println(" <a href=\"/image\">mostra un immagine</a><br>  ");
+      client.println(" <a href=\"/button\">demo bottone</a><br>  ");
+      client.println(" <a href=\"/slider-input\">demo RGB slider</a><br>  ");
+     
+      
+      client.print("</html>");
       Serial.println("invalid request");
       client.stop();
       return;
