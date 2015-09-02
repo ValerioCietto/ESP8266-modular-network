@@ -3,15 +3,16 @@
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include "Page_Configuration.h"
 
+const char *ssid1 = "Hi";
+const char *password1 = "12345678";
 WiFiServer server(80);
 // multicast DNS responder
 MDNSResponder mdns;
 
 void setup() {
   Serial.begin(115200);
-  
+  pinMode(13, OUTPUT);
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -50,9 +51,9 @@ void setup() {
     Serial.println(i);
     Serial.println(WiFi.SSID(i));
     
-    if(strcmp(WiFi.SSID(i), "Primula") == 0){
+    if(strcmp(WiFi.SSID(i), "siluxmedia@gmail.com") == 0){
      
-      WiFi.begin("Primula", "tacchina97");
+      WiFi.begin("siluxmedia@gmail.com", "therobot");
   
       while (WiFi.status() != WL_CONNECTED) {
       delay(500);
@@ -85,7 +86,15 @@ void setup() {
       Serial.println(WiFi.localIP());
     }
     else{
-      Serial.println("no wifi");
+      Serial.println("init soft AP");
+      WiFi.softAP(ssid1, password1);
+      //while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+      Serial.println("done");
+      IPAddress myIP = WiFi.softAPIP();
+      Serial.print("AP IP address: ");
+      Serial.println(myIP);
+      server.begin();
+      Serial.println("Server started");
     }
   }
 
@@ -126,9 +135,11 @@ void loop() {
     String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nGPIO is now ";
     s += (val)?"high":"low";
     s += "</html>\n";
-
+    
+    
     // Send the response to the client
     client.print(s);
+    delay(1000);
     }
     else if (req.indexOf("/gpio/1") != -1){
       val = 1;
@@ -136,9 +147,10 @@ void loop() {
     String s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nGPIO is now ";
     s += (val)?"high":"low";
     s += "</html>\n";
-
+    
     // Send the response to the client
     client.print(s);
+    
     }
     else if (req.indexOf("/modulename") != -1){
       client.print("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>\r\nmodule{\r\ntype:relay\r\n}\n</html>\n"); 
@@ -214,10 +226,11 @@ void loop() {
     }
 
     // Set GPIO2 according to the request
-    digitalWrite(2, val);
+    
   
     client.flush();
-
+    digitalWrite(13, val);
+    digitalWrite(2, val);
     
     delay(1);
     Serial.println("Client disconnected");
