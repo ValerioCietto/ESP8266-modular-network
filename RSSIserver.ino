@@ -120,7 +120,7 @@ void setup() {
     
     else if(strcmp(WiFi.SSID(i), "FABLAB_TORINO") == 0){
      
-      WiFi.begin("FABLAB_TORINO", "FablabTorino");
+      WiFi.begin("FABLAB_TORINO", "imnotgonnatellyou");
   
       while (WiFi.status() != WL_CONNECTED) {
       delay(500);
